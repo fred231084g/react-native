@@ -21,6 +21,7 @@
 const {echo, exec, exit} = require('shelljs');
 const yargs = require('yargs');
 const {isReleaseBranch, parseVersion} = require('./version-utils');
+const {checkIfTagExists} = require('./release-utils');
 
 const argv = yargs
   .option('r', {
@@ -48,6 +49,13 @@ const remote = argv.remote;
 const releaseVersion = argv.toVersion;
 const isLatest = argv.latest;
 const isDryRun = argv.dryRun;
+
+if (checkIfTagExists(releaseVersion)) {
+  echo(`Tag v${releaseVersion} already exists.`);
+  echo('You may want to rollback the last commit');
+  echo('git reset --hard HEAD~1');
+  exit(1);
+}
 
 if (branch && !isReleaseBranch(branch) && !isDryRun) {
   console.error(`This needs to be on a release branch. On branch: ${branch}`);
